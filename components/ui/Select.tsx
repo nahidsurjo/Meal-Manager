@@ -9,6 +9,7 @@ type SelectContextType = {
   selectedLabel: ReactNode;
   setSelectedLabel: React.Dispatch<React.SetStateAction<ReactNode>>;
   onValueChange?: (value: string) => void;
+  disabled?: boolean;
 };
 
 const SelectContext = createContext<SelectContextType | undefined>(undefined);
@@ -25,6 +26,7 @@ type SelectProps = {
   children: ReactNode;
   value?: string;
   onValueChange?: (value: string) => void;
+  disabled?: boolean;
 };
 
 // FIX: Moved SelectContent and SelectItem before Select to fix type inference issues.
@@ -92,7 +94,7 @@ const SelectItem: React.FC<SelectItemProps> = ({ children, value, className }) =
 };
 
 
-const Select: React.FC<SelectProps> = ({ children, value = '', onValueChange }) => {
+const Select: React.FC<SelectProps> = ({ children, value = '', onValueChange, disabled = false }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedValue, setSelectedValue] = useState(value);
   const [selectedLabel, setSelectedLabel] = useState<ReactNode>(null);
@@ -134,18 +136,19 @@ const Select: React.FC<SelectProps> = ({ children, value = '', onValueChange }) 
   }, [value, children, selectedLabel, selectedValue]);
 
   return (
-    <SelectContext.Provider value={{ isOpen, setIsOpen, selectedValue, setSelectedValue, selectedLabel, setSelectedLabel, onValueChange }}>
+    <SelectContext.Provider value={{ isOpen, setIsOpen, selectedValue, setSelectedValue, selectedLabel, setSelectedLabel, onValueChange, disabled }}>
       <div className="relative">{children}</div>
     </SelectContext.Provider>
   );
 };
 
 const SelectTrigger = React.forwardRef<HTMLButtonElement, React.ButtonHTMLAttributes<HTMLButtonElement>>(({ children, className, ...props }, ref) => {
-  const { setIsOpen } = useSelectContext();
+  const { setIsOpen, disabled } = useSelectContext();
   return (
     <button
       ref={ref}
       onClick={() => setIsOpen(prev => !prev)}
+      disabled={disabled}
       className={`flex h-10 w-full items-center justify-between rounded-lg border border-slate-300 bg-white py-2 px-3 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-offset-0 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
       {...props}
     >

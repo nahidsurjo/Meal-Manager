@@ -129,6 +129,23 @@ export default function BachelorMealManager() {
       description: '',
   });
 
+  // State for current user role simulation
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Set initial user or handle if current user is deleted
+    if ((!currentUserId && members.length > 0) || (currentUserId && !members.find(m => m.id === currentUserId))) {
+      const manager = members.find(m => m.isManager);
+      setCurrentUserId(manager ? manager.id : (members.length > 0 ? members[0].id : null));
+    }
+  }, [members, currentUserId]);
+
+  const isCurrentUserAManager = useMemo(() => {
+    if (!currentUserId) return false;
+    const currentUser = members.find(m => m.id === currentUserId);
+    return currentUser?.isManager || false;
+  }, [currentUserId, members]);
+
 
   // Sync settings when navigating to settings page
   useEffect(() => {
@@ -458,6 +475,11 @@ export default function BachelorMealManager() {
 
   // Delete member (in settings view)
   const deleteMember = (memberId: string) => {
+    const memberToDelete = settingsMembers.find(m => m.id === memberId);
+    if (memberToDelete?.isManager) {
+        alert("Cannot delete the manager.");
+        return;
+    }
     if (settingsMembers.length <= 1) {
       alert("Cannot delete the last member");
       return;
@@ -592,7 +614,22 @@ export default function BachelorMealManager() {
             </div>
           )}
 
-          <div className="flex space-x-2">
+          <div className="flex items-center space-x-4">
+             <div className="flex items-center space-x-2">
+                <Label htmlFor="user-select" className="text-sm shrink-0">Viewing as:</Label>
+                <Select value={currentUserId || ''} onValueChange={setCurrentUserId}>
+                    <SelectTrigger id="user-select" className="w-[180px] bg-white">
+                        <SelectValue placeholder="Select User" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {members.map((member) => (
+                        <SelectItem key={member.id} value={member.id}>
+                            {member.name}
+                        </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+            </div>
             <Button 
               variant="outline" 
               onClick={() => {
@@ -719,6 +756,7 @@ export default function BachelorMealManager() {
           variant="outline" 
           className="flex flex-col h-auto py-4 bg-white text-slate-600 hover:bg-slate-50 hover:text-indigo-600 border-slate-200 shadow-sm"
           onClick={openMealModal}
+          disabled={!isCurrentUserAManager}
         >
           <Plus className="w-6 h-6 mb-2" />
           <span className="font-semibold">Add Meal</span>
@@ -728,6 +766,7 @@ export default function BachelorMealManager() {
           variant="outline" 
           className="flex flex-col h-auto py-4 bg-white text-slate-600 hover:bg-slate-50 hover:text-indigo-600 border-slate-200 shadow-sm"
           onClick={openGroceryModal}
+          disabled={!isCurrentUserAManager}
         >
           <ShoppingCart className="w-6 h-6 mb-2" />
           <span className="font-semibold">Bajar Khoroch</span>
@@ -737,6 +776,7 @@ export default function BachelorMealManager() {
           variant="outline" 
           className="flex flex-col h-auto py-4 bg-white text-slate-600 hover:bg-slate-50 hover:text-indigo-600 border-slate-200 shadow-sm"
           onClick={openDepositModal}
+          disabled={!isCurrentUserAManager}
         >
           <Plus className="w-6 h-6 mb-2" />
           <span className="font-semibold">Add Joma</span>
@@ -746,6 +786,7 @@ export default function BachelorMealManager() {
           variant="outline" 
           className="flex flex-col h-auto py-4 bg-white text-slate-600 hover:bg-slate-50 hover:text-indigo-600 border-slate-200 shadow-sm"
           onClick={openOtherModal}
+          disabled={!isCurrentUserAManager}
         >
           <Wifi className="w-6 h-6 mb-2" />
           <span className="font-semibold">Add Expense</span>
@@ -1095,6 +1136,7 @@ export default function BachelorMealManager() {
                           variant="ghost" 
                           size="sm"
                           onClick={() => handleOpenEditModal(transaction)}
+                          disabled={!isCurrentUserAManager}
                         >
                           <Edit className="w-4 h-4" />
                         </Button>
@@ -1148,7 +1190,7 @@ export default function BachelorMealManager() {
             <CardContent>
               <div className="space-y-2">
                 <Label htmlFor="month-select">Current Month</Label>
-                <Select value={settingsMonth} onValueChange={setSettingsMonth}>
+                <Select value={settingsMonth} onValueChange={setSettingsMonth} disabled={!isCurrentUserAManager}>
                   <SelectTrigger id="month-select">
                     <SelectValue placeholder="Select a month" />
                   </SelectTrigger>
@@ -1175,8 +1217,9 @@ export default function BachelorMealManager() {
                   placeholder="Member name"
                   value={newMemberName}
                   onChange={(e) => setNewMemberName(e.target.value)}
+                  disabled={!isCurrentUserAManager}
                 />
-                <Button onClick={handleAddMember}>Add</Button>
+                <Button onClick={handleAddMember} disabled={!isCurrentUserAManager}>Add</Button>
               </div>
             </CardContent>
           </Card>
@@ -1225,28 +1268,33 @@ export default function BachelorMealManager() {
                             variant="outline" 
                             onClick={() => startEditingMember(member)}
                             aria-label={`Edit ${member.name}`}
+                            disabled={!isCurrentUserAManager}
                           >
                             <Edit className="w-4 h-4" />
                           </Button>
                           {!member.isManager && (
+                            <>
                             <Button 
                               size="sm" 
                               variant="outline" 
                               onClick={() => setMemberAsManager(member.id)}
                               aria-label={`Make ${member.name} manager`}
+                              disabled={!isCurrentUserAManager}
                             >
                               <Crown className="w-4 h-4" />
                             </Button>
+                            <Button 
+                                size="sm" 
+                                variant="outline" 
+                                onClick={() => deleteMember(member.id)}
+                                aria-label={`Delete ${member.name}`}
+                                className="text-red-500 hover:bg-red-50"
+                                disabled={!isCurrentUserAManager}
+                            >
+                                <Trash className="w-4 h-4" />
+                            </Button>
+                            </>
                           )}
-                          <Button 
-                            size="sm" 
-                            variant="outline" 
-                            onClick={() => deleteMember(member.id)}
-                             aria-label={`Delete ${member.name}`}
-                             className="text-red-500 hover:bg-red-50"
-                          >
-                            <Trash className="w-4 h-4" />
-                          </Button>
                         </div>
                       )}
                     </TableCell>
@@ -1259,7 +1307,7 @@ export default function BachelorMealManager() {
       </div>
 
       <div className="mt-8 flex justify-end">
-        <Button onClick={handleSaveChanges}>Save Changes</Button>
+        <Button onClick={handleSaveChanges} disabled={!isCurrentUserAManager}>Save Changes</Button>
       </div>
     </div>
   )};
