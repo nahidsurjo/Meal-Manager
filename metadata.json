@@ -1,0 +1,5 @@
+{
+  "name": "Bachelor Meal Manager",
+  "description": "A web application to track shared expenses and meals for a group of bachelors, calculating balances and providing detailed financial breakdowns for each member.",
+  "requestFramePermissions": []
+}
