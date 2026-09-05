@@ -15,7 +15,7 @@
         const r = await fetch('/stripe-saas.html?cloud=1', { cache: 'no-store' });
         if (!r.ok) throw new Error('StripeFlow source could not be loaded (' + r.status + ')');
         let html = await r.text();
-        const inject = '<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"><\\/script><script src="/stripeflow-cloud-sync.js"><\\/script>';
+        const inject = '<script src="/stripeflow-cloud-sync.js"><\\/script>';
         html = html.replace('</body>', inject + '</body>');
         document.open();
         document.write(html);
