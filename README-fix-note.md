@@ -1,0 +1,1 @@
+Shorikul payout is calculated as total withdrawn USD × Shorikul payout rate, minus payments already made.
