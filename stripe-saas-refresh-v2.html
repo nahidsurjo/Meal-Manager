@@ -1,0 +1,16 @@
+<!doctype html><meta charset="utf-8"><title>StripeFlow — Sales Tracker</title><style>html,body{margin:0;height:100%}#loading{padding:40px;font:14px system-ui;color:#64748b;text-align:center}</style><div id="loading">Loading StripeFlow…</div><script>
+const SRC='https://raw.githubusercontent.com/nahidsurjo/Meal-Manager/main/stripe-saas.html?refreshfix=2';
+fetch(SRC,{cache:'no-store'}).then(r=>r.text()).then(h=>{
+ const patch=`<script>(function(){
+ const pages=['dashboard','nahid','linkon','shorikul','settings'];
+ const page=()=>pages.includes(location.hash.slice(1))?location.hash.slice(1):'dashboard';
+ const apply=()=>{const p=page();if(typeof show==='function')show(p)};
+ document.addEventListener('click',function(e){const b=e.target.closest('.nav[data-page]');if(!b)return;const p=b.dataset.page;history.pushState({page:p},'',location.pathname+'#'+p);setTimeout(apply,0)},true);
+ window.addEventListener('popstate',apply);
+ window.addEventListener('hashchange',apply);
+ setTimeout(apply,50);
+ })();<\\/script>`;
+ h=h.replace('</body>',patch+'</body>');
+ document.open();document.write(h);document.close();
+}).catch(e=>document.getElementById('loading').textContent='Failed to load StripeFlow: '+e);
+</script>
