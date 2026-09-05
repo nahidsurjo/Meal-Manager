@@ -1,0 +1,6 @@
+<!doctype html><meta charset="utf-8"><title>StripeFlow — Sales Tracker</title><style>body{margin:0;font-family:system-ui,sans-serif;background:#f7f8fc;color:#0f172a}#loading{padding:40px;text-align:center;color:#64748b}</style><div id="loading">Loading StripeFlow…</div><script>
+fetch('https://raw.githubusercontent.com/nahidsurjo/Meal-Manager/main/stripe-saas.html?fix=1',{cache:'no-store'}).then(r=>r.text()).then(h=>{
+  const fix=`<script>(function(){\nconst originalShow=window.show;\nfunction pageFromHash(){const p=location.hash.replace(/^#/,'');return ['dashboard','nahid','linkon','shorikul','settings'].includes(p)?p:'dashboard'}\nwindow.show=function(p){originalShow(p);if(location.hash.replace(/^#/,'')!==p)history.replaceState(null,'','#'+p)}\nwindow.addEventListener('hashchange',function(){originalShow(pageFromHash())});\nconst p=pageFromHash();setTimeout(()=>originalShow(p),0);\n})();<\\/script>`;
+  h=h.replace('</body>',fix+'</body>');document.open();document.write(h);document.close();
+}).catch(e=>document.getElementById('loading').textContent='Failed to load StripeFlow: '+e);
+</script>
