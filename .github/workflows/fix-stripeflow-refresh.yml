@@ -1,0 +1,89 @@
+name: Fix StripeFlow refresh navigation
+
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-stripeflow-refresh.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Patch StripeFlow navigation persistence
+        shell: python
+        run: |
+          from pathlib import Path
+
+          path = Path('stripe-saas.html')
+          text = path.read_text(encoding='utf-8')
+
+          marker = 'STRIPEFLOW_REFRESH_NAV_V1'
+          if marker in text:
+              print('Refresh navigation patch already installed.')
+              raise SystemExit(0)
+
+          patch = r'''<script>
+          /* STRIPEFLOW_REFRESH_NAV_V1
+             Persist the currently selected workspace section so a browser refresh
+             returns to that exact section instead of resetting to Dashboard.
+          */
+          (function () {
+            const KEY = 'stripeflow_current_page_v1';
+            const PAGES = ['dashboard', 'nahid', 'linkon', 'shorikul', 'settings'];
+
+            function validPage(page) {
+              return PAGES.includes(page) ? page : 'dashboard';
+            }
+
+            function savePage(page) {
+              try { localStorage.setItem(KEY, validPage(page)); } catch (e) {}
+            }
+
+            function restorePage() {
+              let page = 'dashboard';
+              try { page = validPage(localStorage.getItem(KEY) || 'dashboard'); } catch (e) {}
+              if (typeof window.show === 'function') {
+                window.show(page);
+              }
+            }
+
+            // Capture navigation clicks before the app's own click handlers run.
+            document.addEventListener('click', function (event) {
+              const nav = event.target.closest('.nav[data-page]');
+              if (nav) savePage(nav.dataset.page);
+            }, true);
+
+            // Restore after the original app script has finished its initial render.
+            if (document.readyState === 'loading') {
+              document.addEventListener('DOMContentLoaded', function () { setTimeout(restorePage, 0); });
+            } else {
+              setTimeout(restorePage, 0);
+            }
+          })();
+          </script>'''
+
+          needle = '</body>'
+          if needle not in text:
+              raise SystemExit('Could not find </body> in stripe-saas.html')
+
+          text = text.replace(needle, patch + needle, 1)
+          path.write_text(text, encoding='utf-8')
+          print('Installed StripeFlow refresh navigation patch.')
+      - name: Commit patched app
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add stripe-saas.html
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git commit -m "Fix StripeFlow refresh section persistence"
+          git push
