@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>StripeFlow — Sales Tracker</title>
+<style>html,body{margin:0;height:100%;background:#f7f8fc}#loading{padding:40px;text-align:center;font:14px system-ui;color:#64748b}</style>
+</head>
+<body>
+<div id="loading">Loading StripeFlow…</div>
+<script>
+(async function(){
+  const SRC='https://raw.githubusercontent.com/nahidsurjo/Meal-Manager/main/stripe-saas.html?preview='+Date.now();
+  try {
+    let html=await fetch(SRC,{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error('Source load failed: '+r.status);return r.text()});
+    const patch=`<script>
+(function(){
+  const PAGES=['dashboard','nahid','linkon','shorikul','settings'];
+  const KEY='stripeflow_current_page_v2';
+  const valid=p=>PAGES.includes(p)?p:'dashboard';
+  const current=()=>valid(location.hash.slice(1));
+  const remember=p=>{try{localStorage.setItem(KEY,valid(p))}catch(e){}};
+  const restore=()=>{
+    let p=current();
+    if(p==='dashboard'){try{p=valid(localStorage.getItem(KEY)||'dashboard')}catch(e){}}
+    if(typeof window.show==='function')window.show(p);
+    remember(p);
+    if(location.hash!=='#'+p)history.replaceState(null,'','#'+p);
+  };
+  document.addEventListener('click',function(e){
+    const n=e.target.closest('.nav[data-page]');
+    if(!n)return;
+    const p=valid(n.dataset.page);
+    remember(p);
+    history.replaceState(null,'','#'+p);
+    setTimeout(function(){if(typeof window.show==='function')window.show(p)},0);
+  },true);
+  window.addEventListener('hashchange',function(){
+    const p=current();remember(p);
+    if(typeof window.show==='function')window.show(p);
+  });
+  setTimeout(restore,50);
+})();
+<\/script>`;
+    html=html.replace('</body>',patch+'</body>');
+    document.open();document.write(html);document.close();
+  } catch(e) {
+    document.getElementById('loading').textContent='Failed to load StripeFlow: '+e.message;
+  }
+})();
+</script>
+</body>
+</html>
