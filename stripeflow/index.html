@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>StripeFlow</title>
+  <style>html,body{margin:0;height:100%;background:#f7f8fc;font-family:system-ui,sans-serif}#loading{height:100%;display:grid;place-items:center;color:#64748b;font-size:14px}</style>
+</head>
+<body>
+  <div id="loading">Loading StripeFlow…</div>
+  <script>
+    (async function () {
+      const loading = document.getElementById('loading');
+      try {
+        const r = await fetch('/stripe-saas.html?cloud=1', { cache: 'no-store' });
+        if (!r.ok) throw new Error('StripeFlow source could not be loaded (' + r.status + ')');
+        let html = await r.text();
+        const inject = '<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"><\\/script><script src="/stripeflow-cloud-sync.js"><\\/script>';
+        html = html.replace('</body>', inject + '</body>');
+        document.open();
+        document.write(html);
+        document.close();
+      } catch (e) {
+        loading.textContent = 'StripeFlow failed to load: ' + e.message;
+      }
+    })();
+  </script>
+</body>
+</html>
